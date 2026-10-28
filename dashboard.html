@@ -1,0 +1,294 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlogSpace | Dashboard</title>
+     
+    <link rel="stylesheet" href="css/styles.css">
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f7fc;
+            color: #172554;
+            min-height: 100vh;
+        }
+
+        nav {
+            background: #102a56;
+            color: white;
+            padding: 18px 7%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .logo { font-size: 25px; font-weight: bold; }
+
+        nav a { color: white; text-decoration: none; margin-left: 15px; }
+
+        main { max-width: 1100px; margin: 35px auto; padding: 0 20px; }
+
+        .welcome {
+            background: linear-gradient(135deg, #dbeafe, #eff6ff);
+            border-radius: 12px;
+            padding: 28px;
+            margin-bottom: 28px;
+        }
+
+        .welcome p { color: #475569; margin-top: 7px; }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+
+        input {
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            font-size: 15px;
+        }
+
+        #search { flex: 1; min-width: 180px; }
+
+        .btn {
+            display: inline-block;
+            padding: 11px 16px;
+            border: none;
+            border-radius: 7px;
+            background: #2563eb;
+            color: white;
+            text-decoration: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn:hover { background: #1d4ed8; }
+
+        .delete-btn { background: #dc2626; }
+        .delete-btn:hover { background: #b91c1c; }
+
+        .post-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 20px;
+        }
+
+        .post {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 22px;
+            overflow-wrap: anywhere;
+        }
+
+        .category {
+            color: #2563eb;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .post h3 { margin: 10px 0; }
+
+        .post p { color: #64748b; margin-bottom: 14px; }
+
+        .post time {
+            display: block;
+            color: #64748b;
+            font-size: 12px;
+            margin-bottom: 15px;
+        }
+
+        .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+        #empty {
+            background: white;
+            border-radius: 10px;
+            padding: 35px 20px;
+            text-align: center;
+            color: #64748b;
+        }
+
+        footer {
+            margin-top: 60px;
+            padding: 20px;
+            text-align: center;
+            background: #102a56;
+            color: white;
+        }
+
+        @media (max-width: 800px) {
+            .post-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+
+        @media (max-width: 520px) {
+            .post-grid { grid-template-columns: 1fr; }
+            nav a { margin-left: 8px; }
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <div class="logo">BlogSpace.</div>
+        <div>
+            <a href="index.html">Home</a>
+            <a href="create-blog.html">Create Blog</a>
+            <a href="login.html" id="logout">Logout</a>
+        </div>
+    </nav>
+
+    <main>
+        <section class="welcome">
+            <h1 id="welcomeTitle">Your Dashboard</h1>
+            <p>Manage your ideas, create stories, and share your knowledge.</p>
+        </section>
+
+        <div class="toolbar">
+            <h2>My Blog Posts</h2>
+            <a href="create-blog.html" class="btn">+ Create New Blog</a>
+            <input type="search" id="search" placeholder="Search your posts..."
+                   aria-label="Search your posts">
+        </div>
+
+        <section class="post-grid" id="postGrid" aria-live="polite"></section>
+        <p id="empty">No blog posts yet. Create your first post!</p>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 BlogSpace. All rights reserved.</p>
+    </footer>
+
+    <script>
+        const STORAGE_KEY = "blogspace_posts";
+        const postGrid = document.getElementById("postGrid");
+        const empty = document.getElementById("empty");
+        const search = document.getElementById("search");
+
+        let posts = [];
+
+        try {
+            posts = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+            if (!Array.isArray(posts)) posts = [];
+        } catch (error) {
+            posts = [];
+        }
+
+        try {
+            const profile = JSON.parse(
+                localStorage.getItem("blogspace_demo_profile")
+            );
+
+            if (profile && profile.name) {
+                document.getElementById("welcomeTitle").textContent =
+                    "Welcome, " + profile.name + "!";
+            }
+        } catch (error) {
+            // Keep the default dashboard title.
+        }
+
+        function createTextElement(tag, text, className) {
+            const element = document.createElement(tag);
+            element.textContent = text || "";
+            if (className) element.className = className;
+            return element;
+        }
+
+        function renderPosts() {
+            postGrid.replaceChildren();
+
+            const query = search.value.toLowerCase().trim();
+
+            const filtered = posts.filter(function (post) {
+                return [post.title, post.category, post.content]
+                    .some(function (value) {
+                        return String(value || "").toLowerCase().includes(query);
+                    });
+            });
+
+            empty.style.display = filtered.length ? "none" : "block";
+            empty.textContent = posts.length
+                ? "No matching posts found."
+                : "No blog posts yet. Create your first post!";
+
+            filtered.forEach(function (post) {
+                const card = document.createElement("article");
+                card.className = "post";
+
+                card.appendChild(createTextElement(
+                    "span", post.category || "General", "category"
+                ));
+
+                card.appendChild(createTextElement("h3", post.title));
+                card.appendChild(createTextElement(
+                    "p", post.content.length > 150
+                        ? post.content.slice(0, 150) + "..."
+                        : post.content
+                ));
+
+                const date = createTextElement(
+                    "time",
+                    post.date ? new Date(post.date).toLocaleDateString() : ""
+                );
+                card.appendChild(date);
+
+                const actions = document.createElement("div");
+                actions.className = "actions";
+
+                const edit = createTextElement("a", "Edit", "btn");
+                edit.href = "create-blog.html?edit=" +
+                    encodeURIComponent(post.id);
+
+                const remove = createTextElement(
+                    "button", "Delete", "btn delete-btn"
+                );
+                remove.type = "button";
+                remove.addEventListener("click", function () {
+                    if (!confirm("Delete this blog post?")) return;
+
+                    posts = posts.filter(function (item) {
+                        return String(item.id) !== String(post.id);
+                    });
+
+                    savePosts();
+                });
+
+                actions.append(edit, remove);
+                card.appendChild(actions);
+                postGrid.appendChild(card);
+            });
+        }
+
+        function savePosts() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(posts));
+                renderPosts();
+            } catch (error) {
+                alert("Could not save changes in browser storage.");
+            }
+        }
+
+        search.addEventListener("input", renderPosts);
+
+        document.getElementById("logout").addEventListener("click", function (event) {
+            event.preventDefault();
+            // Demo logout only; no real authenticated session exists.
+            window.location.href = "login.html";
+        });
+
+        renderPosts();
+    </script>
+</body>
+</html>

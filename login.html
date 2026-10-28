@@ -1,0 +1,307 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlogSpace | Login</title>
+    
+    <link rel="stylesheet" href="css/styles.css">
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f7fc;
+            color: #172554;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        nav {
+            background: #102a56;
+            color: white;
+            padding: 18px 7%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .logo {
+            font-size: 25px;
+            font-weight: bold;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+        }
+
+        nav a:hover {
+            color: #93c5fd;
+        }
+
+        .login-container {
+            width: min(420px, calc(100% - 32px));
+            margin: 55px auto;
+            padding: 32px;
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 5px 25px #0f172a12;
+            border: 1px solid #e2e8f0;
+        }
+
+        .login-container h1 {
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #64748b;
+            text-align: center;
+            margin-bottom: 26px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 7px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            font-size: 15px;
+        }
+
+        input:focus {
+            outline: 2px solid #93c5fd;
+            border-color: #2563eb;
+        }
+
+        .password-wrapper {
+            display: flex;
+            gap: 8px;
+        }
+
+        .password-wrapper input {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .toggle-btn {
+            padding: 0 10px;
+            border: 1px solid #cbd5e1;
+            background: #eff6ff;
+            border-radius: 7px;
+            cursor: pointer;
+        }
+
+        .login-btn {
+            width: 100%;
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 13px;
+            border-radius: 7px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+
+        .login-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .message {
+            margin-top: 15px;
+            text-align: center;
+            font-size: 14px;
+            overflow-wrap: anywhere;
+        }
+
+        .register-link {
+            text-align: center;
+            margin-top: 20px;
+            color: #475569;
+        }
+
+        .register-link a {
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .home-link {
+            display: block;
+            text-align: center;
+            margin-top: 16px;
+            color: #2563eb;
+            text-decoration: none;
+        }
+
+        footer {
+            margin-top: auto;
+            background: #102a56;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 24px 20px;
+                margin: 30px auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav>
+        <div class="logo">BlogSpace.</div>
+        <a href="index.html">← Back to Home</a>
+    </nav>
+
+    <main class="login-container">
+        <h1>Welcome Back!</h1>
+        <p class="subtitle">Log in to continue your blogging journey.</p>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input
+                    type="email"
+                    id="email"
+                    placeholder="you@example.com"
+                    autocomplete="email"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+
+                <div class="password-wrapper">
+                    <input
+                        type="password"
+                        id="password"
+                        placeholder="Enter your password"
+                        autocomplete="current-password"
+                        required
+                        minlength="6"
+                    >
+
+                    <button
+                        type="button"
+                        class="toggle-btn"
+                        id="togglePassword"
+                        aria-label="Show password"
+                        aria-pressed="false"
+                    >Show</button>
+                </div>
+            </div>
+
+            <button type="submit" class="login-btn">
+                Login
+            </button>
+
+            <p id="message" class="message" role="status"
+                aria-live="polite"></p>
+        </form>
+
+        <p class="register-link">
+            Don't have an account?
+            <a href="register.html">Register here</a>
+        </p>
+
+        <a href="index.html" class="home-link">
+            Explore blogs as a visitor
+        </a>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 BlogSpace. All rights reserved.</p>
+    </footer>
+
+    
+<script>
+    const loginForm = document.getElementById("loginForm");
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+    const message = document.getElementById("message");
+
+    loginForm.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        const email = emailInput.value.trim().toLowerCase();
+        const password = passwordInput.value;
+
+        if (!email || !password) {
+            message.textContent = "Please enter your email and password.";
+            message.className = "message error";
+            return;
+        }
+
+        let profile;
+
+        try {
+            profile = JSON.parse(
+                localStorage.getItem("blogspace_demo_profile")
+            );
+        } catch (error) {
+            profile = null;
+        }
+
+        if (!profile || !profile.email) {
+            message.textContent = "Please register an account first.";
+            message.className = "message error";
+            return;
+        }
+
+        if (email !== profile.email.toLowerCase()) {
+            message.textContent = "Email not found. Please register first.";
+            message.className = "message error";
+            return;
+        }
+
+        // Demo login only: the password is not verified.
+        sessionStorage.setItem(
+            "blogspace_demo_session",
+            JSON.stringify({
+                name: profile.name,
+                email: profile.email
+            })
+        );
+
+        window.location.href = "dashboard.html";
+    });
+
+    const togglePassword = document.getElementById("togglePassword");
+
+    if (togglePassword) {
+        togglePassword.addEventListener("click", function () {
+            const showingPassword = passwordInput.type === "password";
+
+            passwordInput.type = showingPassword ? "text" : "password";
+            togglePassword.textContent = showingPassword ? "Hide" : "Show";
+        });
+    }
+</script>
+</body>
+</html>

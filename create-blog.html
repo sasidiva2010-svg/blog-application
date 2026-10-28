@@ -1,0 +1,321 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlogSpace | Create Blog</title>
+     
+    <link rel="stylesheet" href="css/styles.css">
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f7fc;
+            color: #172554;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        nav {
+            background: #102a56;
+            color: white;
+            padding: 18px 7%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .logo { font-size: 25px; font-weight: bold; }
+
+        nav a { color: white; text-decoration: none; }
+
+        .container {
+            width: min(760px, calc(100% - 32px));
+            margin: 35px auto;
+            padding: 30px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            box-shadow: 0 5px 25px #0f172a0d;
+        }
+
+        h1 { margin-bottom: 8px; }
+
+        .subtitle {
+            color: #64748b;
+            margin-bottom: 25px;
+        }
+
+        .form-group { margin-bottom: 20px; }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            font: inherit;
+            background: white;
+        }
+
+        textarea {
+            min-height: 220px;
+            resize: vertical;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: 2px solid #93c5fd;
+            border-color: #2563eb;
+        }
+
+        .hint {
+            display: block;
+            margin-top: 6px;
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 7px;
+            background: #2563eb;
+            color: white;
+            font-size: 15px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .btn:hover { background: #1d4ed8; }
+
+        .cancel {
+            background: #e2e8f0;
+            color: #172554;
+        }
+
+        .cancel:hover { background: #cbd5e1; }
+
+        #message {
+            margin-top: 17px;
+            overflow-wrap: anywhere;
+        }
+
+        footer {
+            margin-top: auto;
+            padding: 20px;
+            text-align: center;
+            background: #102a56;
+            color: white;
+        }
+
+        @media (max-width: 480px) {
+            .container { padding: 22px 18px; }
+            .actions .btn { text-align: center; flex: 1; }
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <div class="logo">BlogSpace.</div>
+        <div>
+            <a href="index.html">Home</a> |
+            <a href="dashboard.html">Dashboard</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <h1 id="pageTitle">Create a Blog Post</h1>
+        <p class="subtitle">Turn your ideas into a story worth sharing.</p>
+
+        <form id="blogForm">
+            <div class="form-group">
+                <label for="title">Blog Title *</label>
+                <input type="text" id="title" required
+                       minlength="3" maxlength="120"
+                       placeholder="Enter an interesting title">
+            </div>
+
+            <div class="form-group">
+                <label for="description">Short Description *</label>
+                <input type="text" id="description" required
+                       maxlength="250"
+                       placeholder="Summarize your blog in a sentence">
+                <small class="hint">Maximum 250 characters.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="category">Category *</label>
+                <select id="category" required>
+                    <option value="">Choose a category</option>
+                    <option value="Technology">Technology</option>
+                    <option value="Education">Education</option>
+                    <option value="Lifestyle">Lifestyle</option>
+                    <option value="Travel">Travel</option>
+                    <option value="Health">Health</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="imageUrl">Featured Image URL (optional)</label>
+                <input type="url" id="imageUrl"
+                       placeholder="https://example.com/image.jpg">
+            </div>
+
+            <div class="form-group">
+                <label for="content">Blog Content *</label>
+                <textarea id="content" required minlength="20"
+                          maxlength="20000"
+                          placeholder="Write your blog content here..."></textarea>
+                <small class="hint">Write at least 20 characters.</small>
+            </div>
+
+            <div class="actions">
+                <button type="submit" class="btn" id="publishButton">
+                    Publish Blog
+                </button>
+                <a href="dashboard.html" class="btn cancel">Cancel</a>
+            </div>
+
+            <p id="message" role="status" aria-live="polite"></p>
+        </form>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 BlogSpace. All rights reserved.</p>
+    </footer>
+
+    <script>
+        const STORAGE_KEY = "blogspace_posts";
+        const form = document.getElementById("blogForm");
+        const message = document.getElementById("message");
+
+        const titleInput = document.getElementById("title");
+        const descriptionInput = document.getElementById("description");
+        const categoryInput = document.getElementById("category");
+        const imageInput = document.getElementById("imageUrl");
+        const contentInput = document.getElementById("content");
+
+        const params = new URLSearchParams(window.location.search);
+        const editId = params.get("edit");
+
+        let posts = [];
+
+        try {
+            posts = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+            if (!Array.isArray(posts)) posts = [];
+        } catch (error) {
+            posts = [];
+        }
+
+        let existingPost = null;
+
+        if (editId !== null) {
+            existingPost = posts.find(function (post) {
+                return String(post.id) === editId;
+            });
+
+            if (!existingPost) {
+                message.style.color = "#dc2626";
+                message.textContent = "Post not found. Return to the Dashboard.";
+                form.hidden = true;
+            } else {
+                document.getElementById("pageTitle").textContent =
+                    "Edit Blog Post";
+                document.getElementById("publishButton").textContent =
+                    "Save Changes";
+
+                titleInput.value = existingPost.title || "";
+                descriptionInput.value = existingPost.description || "";
+                categoryInput.value = existingPost.category || "";
+                imageInput.value = existingPost.imageUrl || "";
+                contentInput.value = existingPost.content || "";
+            }
+        }
+
+        form.addEventListener("submit", function (event) {
+            event.preventDefault();
+
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const title = titleInput.value.trim();
+            const description = descriptionInput.value.trim();
+            const category = categoryInput.value;
+            const content = contentInput.value.trim();
+            const imageUrl = imageInput.value.trim();
+
+            if (title.length < 3 || content.length < 20) {
+                message.style.color = "#dc2626";
+                message.textContent =
+                    "Please enter a title and content of the required length.";
+                return;
+            }
+
+            const now = new Date().toISOString();
+
+            const post = {
+                id: existingPost ? existingPost.id : (
+                    window.crypto && crypto.randomUUID
+                        ? crypto.randomUUID()
+                        : String(Date.now()) + Math.random().toString(16).slice(2)
+                ),
+                title: title,
+                description: description,
+                category: category,
+                imageUrl: imageUrl,
+                content: content,
+                date: existingPost ? existingPost.date : now,
+                updatedAt: now
+            };
+
+            if (existingPost) {
+                posts = posts.map(function (item) {
+                    return String(item.id) === String(existingPost.id)
+                        ? post
+                        : item;
+                });
+            } else {
+                posts.unshift(post);
+            }
+
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(posts));
+                window.location.href = "dashboard.html";
+            } catch (error) {
+                message.style.color = "#dc2626";
+                message.textContent =
+                    "Unable to save your post. Check browser storage and try again.";
+            }
+        });
+    </script>
+    
+    <footer>
+        <p>&copy; 2026 BlogSpace. All rights reserved.</p>
+    </footer>
+
+    <script src="js/script.js"></script>
+
+</body>
+</html>
